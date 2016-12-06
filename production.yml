@@ -1,0 +1,53 @@
+version: '2'
+
+services:
+
+    scrum_web:
+        build: ./source
+        restart: always
+        container_name: scrum_web 
+        expose:
+            - "8000"
+        depends_on:
+            - scrum_mysql
+            - scrum_mysql_data
+        links:
+            - scrum_mysql:mysql
+        volumes:
+            - ./source:/usr/src/app
+        env_file: .env
+        environment:
+            DEBUG: 'false'
+        command: /usr/local/bin/gunicorn scrum.wsgi -w 2 -b :8000   # Gunicorn command should be run from where manage.py of django is located.
+                                                                    # Creates 2 worker processes and listens at 8000 port
+
+    scrum_nginx:
+        build: ./nginx/
+        restart: always
+        container_name: scrum_nginx
+        ports:
+            - "9000:80"                                             # Host port 9000 is mapped on to container's port 80
+        volumes:
+            - /www/static
+        links:
+            - scrum_web:web
+
+    scrum_mysql_data:
+        image: mysql:5.7
+        container_name: scrum_mysql_data
+        entrypoint: /bin/bash
+
+
+    scrum_mysql:
+        image: mysql:5.7
+        restart: always
+        container_name: scrum_mysql
+        depends_on:
+            - scrum_mysql_data
+        volumes_from:
+            - scrum_mysql_data
+        environment:
+            MYSQL_DATABASE: scrum_app
+            MYSQL_USER: scrum_master
+            MYSQL_PASSWORD: scrum@2016!
+            MYSQL_ROOT_PASSWORD: Selenite#1
