@@ -5,9 +5,13 @@ services:
     scrum_web:
         build: ./source
         container_name: scrum_web 
-        # restart: always
         expose:
             - "8000"
+        depends_on:
+            - scrum_mysql
+            - scrum_mysql_data
+        links:
+            - scrum_mysql:mysql
         volumes:
             - ./source:/usr/src/app
         env_file: .env
@@ -19,10 +23,28 @@ services:
     scrum_nginx:
         build: ./nginx/
         container_name: scrum_nginx
-        # restart: always
         ports:
             - "9000:80"                                             # Host port 9000 is mapped on to container's port 80
         volumes:
             - /www/static
         links:
-        - scrum_web:web
+            - scrum_web:web
+
+    scrum_mysql_data:
+        image: mysql:5.7
+        container_name: scrum_mysql_data
+        entrypoint: /bin/bash
+
+
+    scrum_mysql:
+        image: mysql:5.7
+        container_name: scrum_mysql
+        depends_on:
+            - scrum_mysql_data
+        volumes_from:
+            - scrum_mysql_data
+        environment:
+            MYSQL_DATABASE: scrum_app
+            MYSQL_USER: scrum_master
+            MYSQL_PASSWORD: scrum@2016!
+            MYSQL_ROOT_PASSWORD: Selenite#1

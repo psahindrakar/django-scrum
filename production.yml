@@ -3,7 +3,7 @@ version: '2'
 services:
 
     scrum_web:
-        build: ./source
+        build: .
         restart: always
         container_name: scrum_web 
         expose:

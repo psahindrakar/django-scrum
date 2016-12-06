@@ -5,6 +5,7 @@ Django==1.10
 djangorestframework==3.5.3
 django-filter==1.0.1
 Markdown==2.6.7
+mysqlclient==1.3.9
 
 # Server
 gunicorn==19.6.0
