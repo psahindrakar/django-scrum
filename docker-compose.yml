@@ -1,0 +1,28 @@
+version: '2'
+
+services:
+
+    scrum_web:
+        build: ./source
+        container_name: scrum_web 
+        # restart: always
+        expose:
+            - "8000"
+        volumes:
+            - ./source:/usr/src/app
+        env_file: .env
+        environment:
+            DEBUG: 'true'
+        command: /usr/local/bin/gunicorn scrum.wsgi -w 2 -b :8000   # Gunicorn command should be run from where manage.py of django is located.
+                                                                    # Creates 2 worker processes and listens at 8000 port
+
+    scrum_nginx:
+        build: ./nginx/
+        container_name: scrum_nginx
+        # restart: always
+        ports:
+            - "9000:80"                                             # Host port 9000 is mapped on to container's port 80
+        volumes:
+            - /www/static
+        links:
+        - scrum_web:web
