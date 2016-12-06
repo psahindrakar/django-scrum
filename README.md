@@ -80,6 +80,93 @@ be created in the current folder and not create a new folder for it.
 12. To test if everything is configured correctly, build docker composer by `docker-composer build` and execute with `docker-composer up`
 13. In browser check `localhost:9000` for running django server. A web page with success message should be displayed.
 
+# Configuring Mysql
+Django by default comes configured to work with sqlite database. For bigger project mysqlite is not an option. In this case, we want to use mysql with 
+django. The `docker-compose.yml` is updated as follows to include mysql and mysql data container -
+```
+version: '2'
+
+services:
+
+    scrum_web:
+        build: ./source
+        container_name: scrum_web 
+        expose:
+            - "8000"
+        depends_on:
+            - scrum_mysql
+            - scrum_mysql_data
+        links:
+            - scrum_mysql:mysql
+        volumes:
+            - ./source:/usr/src/app
+        env_file: .env
+        environment:
+            DEBUG: 'true'
+        command: /usr/local/bin/gunicorn scrum.wsgi -w 2 -b :8000   # Gunicorn command should be run from where manage.py of django is located.
+                                                                    # Creates 2 worker processes and listens at 8000 port
+
+    scrum_nginx:
+        build: ./nginx/
+        container_name: scrum_nginx
+        ports:
+            - "9000:80"                                             # Host port 9000 is mapped on to container's port 80
+        volumes:
+            - /www/static
+        links:
+            - scrum_web:web
+
+    scrum_mysql_data:
+        image: mysql:5.7
+        container_name: scrum_mysql_data
+        entrypoint: /bin/bash
+
+
+    scrum_mysql:
+        image: mysql:5.7
+        container_name: scrum_mysql
+        depends_on:
+            - scrum_mysql_data
+        volumes_from:
+            - scrum_mysql_data
+        environment:
+            MYSQL_DATABASE: scrum_app
+            MYSQL_USER: scrum_master
+            MYSQL_PASSWORD: scrum@2016!
+            MYSQL_ROOT_PASSWORD: Selenite#1
+```
+and the `.env` file is updated with environment variables which are inturn passed to scrum_web container. 
+```
+# Add Environment Variables
+
+SECRET_KEY=twydj8^_vdjw$ww7@^6e542v_rzab+qy*57qwjbf63khz2fc2)
+DB_NAME=scrum_app
+DB_USER=scrum_master
+DB_PASS=scrum@2016!
+DB_SERVICE=mysql
+DB_PORT=3306
+```
+The `/source/scrum/settings.py` file is updated to use mysql and environment variable passed from `.env` file. Take a look in the file for more details.
+
+
+# Migration and setting up superuser
+After following the reference tutorial from documents folder, the scrum and task models are created in `/source/board/models.py`. As per the model the 
+database needs to be udpated. To do so the migrations need to created and applied on the database. It can be done as follows - 
+1. Connect to the scrum_web container using following command - 
+```
+docker exec -ti scrum_web /bin/bash
+``` 
+It start the container's bash terminal. 
+2. Run following commands on the terminal to create and apply migrations -
+```
+python manage.py makemigrations board
+python manage.py migrate
+```
+3. To create a superuser run following command and follow terminal instructions -
+```
+python manage.py createsuperuser
+```
+
 
 
 
