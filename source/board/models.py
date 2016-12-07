@@ -27,7 +27,7 @@ class Task(models.Model):
 
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, default='')
-    sprint = models.ForeignKey(Sprint, blank=True, null=True)
+    sprint = models.ForeignKey(Sprint, blank=True, null=True, related_name='tasks')
     status = models.SmallIntegerField(choices=STATUS_CHOICES, default=STATUS_TODO)
     order = models.SmallIntegerField(default=0)
     assigned = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
