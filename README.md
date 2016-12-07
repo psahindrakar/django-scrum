@@ -167,6 +167,30 @@ python manage.py migrate
 python manage.py createsuperuser
 ```
 
+# Installing collectstatic
+When trying out apis in browser in debug mode, django provides a facility for api testing. The views generated for these testing require various static
+file to make the pages look good. Django provides a package called `collectstatic` which when installed in projects brings all the required static files
+to make the test page look good. Add following to ;ine `settings.py`. It locates the static folder for the project. It is the location where all the
+static files will be installed. 
+
+```
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+```
+After that from base dir, execute following command to bring static resources.  
+```
+python manage.py collectstatic
+```
+As we are using nginx as a loadbalancer and static file distributor, it should be made sure that the nginx setting are configured correctly to register the 
+static folder. In nginx server configuration, the static location should be configured as follows. 
+```
+location /static {
+    alias /usr/src/app/static;
+}
+```
+
+
+
+
 
 
 

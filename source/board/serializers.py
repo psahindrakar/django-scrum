@@ -11,21 +11,19 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', User.USERNAME_FIELD, 'full_name', 'is_active')
-        
-
-class SprintSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Sprint
-        fields = ('id', 'name', 'description', 'end')
 
 
 class TaskSerializer(serializers.ModelSerializer):
     assigned = serializers.SlugRelatedField(slug_field=User.USERNAME_FIELD, read_only=True, required=False)
-    status_display = serializers.SerializerMethodField('get_status_display')
-
+    
     class Meta:
         model = Task
-        fields = ('id', 'name', 'description', 'sprint', 'status', 'status_display', 'order', 'assigned', 'started', 'due', 'completed',)
+        fields = ('id', 'name', 'description', 'sprint', 'status', 'order', 'assigned', 'started', 'due', 'completed',)
 
-    def get_status_display(self, obj):
-        return obj.get_status_display()
+
+class SprintSerializer(serializers.ModelSerializer):
+    tasks = TaskSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Sprint
+        fields = ('id', 'name', 'description', 'end', 'tasks')

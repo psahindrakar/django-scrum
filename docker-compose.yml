@@ -26,7 +26,7 @@ services:
         ports:
             - "9000:80"                                             # Host port 9000 is mapped on to container's port 80
         volumes:
-            - /www/static
+            - ./source:/usr/src/app
         links:
             - scrum_web:web
 
