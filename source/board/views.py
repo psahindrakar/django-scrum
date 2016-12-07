@@ -1,7 +1,10 @@
+from django.contrib.auth import get_user_model
 from rest_framework import viewsets, authentication, permissions
 
-from .models import Sprint, Task, User
+from .models import Sprint, Task
 from .serializers import SprintSerializer, TaskSerializer, UserSerializer
+
+User = get_user_model()
 
 class DefaultsMixin(object):                                                  
     authentication_classes = ( 
