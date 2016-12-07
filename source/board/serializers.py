@@ -1,6 +1,12 @@
-from django.contrib.auth import get_user_model  
+from datetime import date
+
+from django.utils.translation import ugettext_lazy as _  
+from django.contrib.auth import get_user_model
+
 from rest_framework import serializers
+
 from .models import Sprint, Task
+
 
 User = get_user_model()
 
@@ -27,3 +33,9 @@ class SprintSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sprint
         fields = ('id', 'name', 'description', 'end', 'tasks')
+
+    def validate_end(self, value):                
+        if(value < date.today()): 
+            msg = _('End date cannot be in the past.') 
+            raise serializers.ValidationError(msg) 
+        return attrs
