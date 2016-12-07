@@ -2,6 +2,10 @@
 A sample project to start learning RESTful server development with python-django. The project is configured using docker for 
 ease for development and deployment.
 
+In this document, tried to capture as much details as possible as to how the final result is achieved. A scrum board building example is considered here. 
+The details about the example is in the document folder. It is example from a blog. Though the example is for django 2.x, in this repo it has been updated for 
+django 3.x.
+
 # Setting up django with docker
 
 Steps followed to setup a project
