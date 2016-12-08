@@ -1,18 +1,14 @@
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.contrib.auth import get_user_model
-from rest_framework import viewsets, authentication, permissions, filters
 
-from rest_framework.pagination import PageNumberPagination
+from rest_framework import viewsets, authentication, permissions, filters
+from rest_framework.response import Response
 
 from .models import Sprint, Task
 from .serializers import SprintSerializer, TaskSerializer, UserSerializer
 from .forms import TaskFilter, SprintFilter
 
 User = get_user_model()
-
-class StandardResultsSetPagination(PageNumberPagination):
-    page_size = 100                         # Default page size for pagination
-    page_size_query_param = 'page_size'     # A query parameter variable name for page page_size
-    max_page_size = 1000                    # Maximum page size which is to be allowed on a list view
 
 
 class DefaultsMixin(object):                                                  
@@ -22,10 +18,7 @@ class DefaultsMixin(object):
     ) 
     permission_classes = ( 
         permissions.IsAuthenticated, 
-    ) 
-    paginate_by = 25  
-    paginate_by_param = 'page_size'  
-    max_paginate_by = 100
+    )
     filter_backends = (
         filters.DjangoFilterBackend,
         filters.SearchFilter,
@@ -47,16 +40,73 @@ class TaskViewSet(DefaultsMixin, viewsets.ModelViewSet):
     # filter_class = TaskFilter
     search_fields = ('name', 'description',)
     ordering_fields = ('name', 'order', 'started', 'due', 'completed',)
-    pagination_class = StandardResultsSetPagination
 
-    def list(self, request, *args, **kwargs):
-        kwargs = {}                                                 # defining an empty set for fields
+    def getFieldsInKwargs(self, request):
+        kwargs = {}                     # defining an empty set
         param_key = 'fields'
         if param_key in request.query_params.keys():
             val = set(request.query_params[param_key].split(","))
             kwargs[param_key] = val
+        return kwargs
 
-        serializer = TaskSerializer(many=True, **kwargs)
+    
+    def getPaginatedResult(self, request):
+        maximum_page_size = 500
+        default_page_size = 10
+        default_page_no = 1
+
+        param_key = 'page_size'
+        page_size = default_page_size
+        if param_key in request.query_params.keys():
+            val = request.query_params[param_key]
+            try:
+                page_size = int(val) if maximum_page_size > int(val) else maximum_page_size
+            except ValueError:
+                page_size = maximum_page_size            
+
+        param_key = 'page_no'
+        page_no = default_page_no
+        if param_key in request.query_params.keys():
+            val = request.query_params[param_key]
+            try:
+                page_no = int(val)
+            except ValueError:
+                page_no = default_page_no
+                
+        paginator = Paginator(self.queryset, page_size)
+
+        emptyPage = False
+        try:
+            page = paginator.page(page_no)
+        except EmptyPage:
+            # If page is out of range (e.g. 9999), deliver last page of results by paginator.page(paginator.num_pages)
+            # or emply result can be returned
+            emptyPage = True
+            page = []
+
+        pages = {
+            "current_count" : 0 if emptyPage else len(page.object_list),
+            "size" : page_size,
+            "index" : page_no,
+            "total_count" : paginator.num_pages,
+            "page" : page
+        }
+        return pages
+
+
+    def list(self, request, *args, **kwargs):
+        kwargs = self.getFieldsInKwargs(request)
+        pages = self.getPaginatedResult(request)
+        
+        serializer = TaskSerializer(pages["page"], many=True, **kwargs)
+        res_data = {
+            "current_count": pages["current_count"],
+            "page_size": pages["size"],
+            "page_no": pages["index"],
+            "total_pages": pages["total_count"],
+            "list" : serializer.data
+        }
+        return Response(res_data)
 
 
 class UserViewSet(DefaultsMixin, viewsets.ReadOnlyModelViewSet):
