@@ -19,7 +19,8 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
     """
     def __init__(self, *args, **kwargs):
         # Do not pass the custom fields received in kwargs to super class
-        fields = kwargs.pop('fields', None)
+        context = kwargs.pop('context', None)
+        fields = context.pop('fields', None) if context else None
 
         # Instantiate the superclass normally
         super(DynamicFieldsModelSerializer, self).__init__(*args, **kwargs)
