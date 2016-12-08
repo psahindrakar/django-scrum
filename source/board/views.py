@@ -1,11 +1,19 @@
 from django.contrib.auth import get_user_model
 from rest_framework import viewsets, authentication, permissions, filters
 
+from rest_framework.pagination import PageNumberPagination
+
 from .models import Sprint, Task
 from .serializers import SprintSerializer, TaskSerializer, UserSerializer
 from .forms import TaskFilter, SprintFilter
 
 User = get_user_model()
+
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 100                         # Default page size for pagination
+    page_size_query_param = 'page_size'     # A query parameter variable name for page page_size
+    max_page_size = 1000                    # Maximum page size which is to be allowed on a list view
+
 
 class DefaultsMixin(object):                                                  
     authentication_classes = ( 
@@ -39,6 +47,16 @@ class TaskViewSet(DefaultsMixin, viewsets.ModelViewSet):
     # filter_class = TaskFilter
     search_fields = ('name', 'description',)
     ordering_fields = ('name', 'order', 'started', 'due', 'completed',)
+    pagination_class = StandardResultsSetPagination
+
+    def list(self, request, *args, **kwargs):
+        kwargs = {}                                                 # defining an empty set for fields
+        param_key = 'fields'
+        if param_key in request.query_params.keys():
+            val = set(request.query_params[param_key].split(","))
+            kwargs[param_key] = val
+
+        serializer = TaskSerializer(many=True, **kwargs)
 
 
 class UserViewSet(DefaultsMixin, viewsets.ReadOnlyModelViewSet):
