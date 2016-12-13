@@ -192,6 +192,33 @@ location /static {
 }
 ```
 
+#Doing Something Periodic
+In most of the projects, there are some periodic tasks e.g. sending email for pending payments, sending a remider sms of service expiry etc. Considering
+one of the typical cases for this project. In the content of sprint project, we can decide to send an email reminder to assignee about the task which will
+expire on the day. 
+
+The idea will be send an email at 7am every morning with a list of tasks which are going to expire on that very day. With that email user will be aware that
+those tasks needs to be completed on the same day. 
+
+In order to do that, we are going to use celery. Following line will be added to `requirements.txt` file. 
+```
+celery==4.0.1                       # For task queue and cronjobs
+```
+As there are changes in `requirements.txt` file, the `scrum_web` container needs to be reinitialised to prepare as per new changes. Run
+'docker-compose build' for the same. To maintain all the celery tasks a separate app is created called as `services` using following command 
+```
+docker-compose run scrum_web /bin/bash
+python manage.py startapp services
+exit
+```
+After that new folder are created in the project directoty. The folder access rights needs to be updated by `chmod +666 ./source/*`.
+Celerry tasks is created following the instruction from [this link](https://realpython.com/blog/python/asynchronous-tasks-with-django-and-celery/)
+
+Docker configuration for celery and django is introduced in [this post](https://www.syncano.io/blog/configuring-running-django-celery-docker-containers-pt-1/)
+
+
+
+
 
 
 

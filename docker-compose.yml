@@ -10,6 +10,8 @@ services:
         depends_on:
             - scrum_mysql
             - scrum_mysql_data
+            - scrum_redis
+            - scrum_rabbitmq
         links:
             - scrum_mysql:mysql
         volumes:
@@ -17,8 +19,38 @@ services:
         env_file: .env
         environment:
             DEBUG: 'true'
-        command: /usr/local/bin/gunicorn scrum.wsgi -w 2 -b :8000   # Gunicorn command should be run from where manage.py of django is located.
-                                                                    # Creates 2 worker processes and listens at 8000 port
+        command: ./run_web.sh
+
+
+    scrum_redis:
+        image: redis:3.2
+        container_name: scrum_redis
+
+
+    scrum_rabbitmq:
+        container_name: scrum_rabbitmq
+        image: rabbitmq:3.6
+        environment:
+            - RABBITMQ_DEFAULT_USER=rabbit_admin
+            - RABBITMQ_DEFAULT_PASS=scrum@2016!
+        ports:
+            - "5672:5672"       # we forward this port because it's useful for debugging
+            - "15672:15672"     # here, we can access rabbitmq management plugin                                                                
+
+
+    scrum_celery_worker:
+        build: ./source        
+        volumes:
+            - ./source:/usr/src/app
+        depends_on:
+            - scrum_mysql
+            - scrum_mysql_data
+            - scrum_redis
+            - scrum_rabbitmq
+        links:
+            - scrum_rabbitmq:rabbitmq
+        command: ./run_celery.sh
+
 
     scrum_nginx:
         build: ./nginx/
@@ -29,6 +61,7 @@ services:
             - ./source:/usr/src/app
         links:
             - scrum_web:web
+
 
     scrum_mysql_data:
         image: mysql:5.7
