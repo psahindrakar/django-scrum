@@ -17,7 +17,7 @@ class DefaultsMixin(object):
         filters.DjangoFilterBackend,
         filters.SearchFilter,
         filters.OrderingFilter,
-    )    
+    )   
 
     def get_serializer(self, *args, **kwargs):
         serializer_class = self.get_serializer_class()

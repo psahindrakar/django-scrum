@@ -1,11 +1,13 @@
 # Framework
 Django==1.10
+djangorestframework==3.5.3
 
 # Libs 
-djangorestframework==3.5.3
-django-filter==1.0.1
+django-filter==1.0.1                
 Markdown==2.6.7
 mysqlclient==1.3.9
+celery==4.0.1                       # For task queue and cronjobs
+redis==2.10.5
 
 # Server
-gunicorn==19.6.0
+gunicorn==19.6.0                    # Python production ready server
