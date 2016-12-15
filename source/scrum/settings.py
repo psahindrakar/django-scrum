@@ -133,7 +133,6 @@ RABBIT_HOSTNAME = os.getenv('RABBIT_PORT_5672_TCP', 'rabbit')
 if RABBIT_HOSTNAME.startswith('tcp://'):  
     RABBIT_HOSTNAME = RABBIT_HOSTNAME.split('//')[1]
 
-
 BROKER_URL = os.getenv('BROKER_URL','')
 if not BROKER_URL:  
     BROKER_URL = 'amqp://{user}:{password}@{hostname}/{vhost}/'.format(
@@ -144,6 +143,8 @@ if not BROKER_URL:
 
 
 print('Broker URL : ' + BROKER_URL)
+BROKER_TRANSPORT_OPTIONS = {'fanout_prefix': True, 'fanout_patterns': True, 'visibility_timeout': 480}
+
 
 # We don't want to have dead connections stored on rabbitmq, so we have to negotiate using heartbeats
 BROKER_HEARTBEAT = '?heartbeat=30'  
@@ -159,10 +160,11 @@ BROKER_CONNECTION_TIMEOUT = 10
 # Celery configuration
 
 # configure queues, currently we have only one
-CELERY_DEFAULT_QUEUE = 'default'  
-CELERY_QUEUES = (  
-    Queue('default', Exchange('default'), routing_key='default'),
-)
+CELERY_TIMEZONE = 'UTC'
+# CELERY_DEFAULT_QUEUE = 'default'  
+# CELERY_QUEUES = (  
+#     Queue('default', Exchange('default'), routing_key='default'),
+# )
 
 # Sensible settings for celery
 CELERY_ALWAYS_EAGER = False  
@@ -176,6 +178,7 @@ CELERY_DISABLE_RATE_LIMITS = False
 CELERY_IGNORE_RESULT = True  
 CELERY_SEND_TASK_ERROR_EMAILS = False  
 CELERY_TASK_RESULT_EXPIRES = 600
+CELERY_RESULT_SERIALIZER = 'json'
 
 # Set redis as celery result backend
 CELERY_RESULT_BACKEND = 'redis://%s:%d/%d' % (REDIS_HOST, REDIS_PORT, REDIS_DB)  

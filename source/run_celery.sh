@@ -3,5 +3,5 @@
 # wait for RabbitMQ server to start
 sleep 10
 
-# run Celery worker for our project myproject with Celery configuration stored in Celeryconf
-celery worker -A scrum.celery -Q default -n @%h
+# Run celery worker with circus project manager with configurations in an ini file. 
+circusd circus_worker.ini

@@ -2,11 +2,15 @@ from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.contrib.auth import get_user_model
 
 from rest_framework import viewsets
+from rest_framework.response import Response
 
 from .models import Sprint, Task
 from .serializers import SprintSerializer, TaskSerializer, UserSerializer
 from .forms import TaskFilter, SprintFilter
 from .mixins import DefaultsMixin
+
+from .tasks import say_hi
+
 
 User = get_user_model()
 

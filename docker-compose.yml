@@ -1,57 +1,6 @@
 version: '2'
 
 services:
-
-    scrum_web:
-        build: ./source
-        container_name: scrum_web 
-        expose:
-            - "8000"
-        depends_on:
-            - scrum_mysql
-            - scrum_mysql_data
-            - scrum_redis
-            - scrum_rabbitmq
-        links:
-            - scrum_mysql:mysql
-        volumes:
-            - ./source:/usr/src/app
-        env_file: .env
-        environment:
-            DEBUG: 'true'
-        command: ./run_web.sh
-
-
-    scrum_redis:
-        image: redis:3.2
-        container_name: scrum_redis
-
-
-    scrum_rabbitmq:
-        container_name: scrum_rabbitmq
-        image: rabbitmq:3.6
-        environment:
-            - RABBITMQ_DEFAULT_USER=rabbit_admin
-            - RABBITMQ_DEFAULT_PASS=scrum@2016!
-        ports:
-            - "5672:5672"       # we forward this port because it's useful for debugging
-            - "15672:15672"     # here, we can access rabbitmq management plugin                                                                
-
-
-    scrum_celery_worker:
-        build: ./source        
-        volumes:
-            - ./source:/usr/src/app
-        depends_on:
-            - scrum_mysql
-            - scrum_mysql_data
-            - scrum_redis
-            - scrum_rabbitmq
-        links:
-            - scrum_rabbitmq:rabbitmq
-        command: ./run_celery.sh
-
-
     scrum_nginx:
         build: ./nginx/
         container_name: scrum_nginx
@@ -81,3 +30,76 @@ services:
             MYSQL_USER: scrum_master
             MYSQL_PASSWORD: scrum@2016!
             MYSQL_ROOT_PASSWORD: Selenite#1
+
+
+    scrum_redis:
+        image: redis:3.2
+        container_name: scrum_redis
+
+
+    scrum_rabbitmq:
+        container_name: scrum_rabbitmq
+        image: rabbitmq:3.6
+        environment:
+            - RABBITMQ_DEFAULT_USER=rabbit_admin
+            - RABBITMQ_DEFAULT_PASS=scrum@2016!
+        ports:
+            - "5672:5672"       # we forward this port because it's useful for debugging
+            - "15672:15672"     # here, we can access rabbitmq management plugin                                                                
+
+    
+    scrum_web:
+        build: ./source
+        container_name: scrum_web 
+        expose:
+            - "8000"
+        depends_on:
+            - scrum_mysql
+            - scrum_mysql_data
+            - scrum_redis
+            - scrum_rabbitmq
+        links:
+            - scrum_mysql:mysql
+            - scrum_redis:redis
+            - scrum_rabbitmq:rabbitmq
+        volumes:
+            - ./source:/usr/src/app
+        env_file: .env
+        environment:
+            DEBUG: 'true'
+        command: ./run_web.sh
+
+
+    scrum_celery_worker:
+        build: ./source        
+        depends_on:
+            - scrum_mysql
+            - scrum_mysql_data
+            - scrum_redis
+            - scrum_rabbitmq
+        links:
+            - scrum_mysql:mysql
+            - scrum_redis:redis
+            - scrum_rabbitmq:rabbitmq
+        volumes:
+            - ./source:/usr/src/app
+        env_file: .env
+        command: ./run_celery.sh
+
+    
+    scrum_celery_beat:
+        build: ./source     
+        container_name: scrum_celery_beat   
+        depends_on:
+            - scrum_mysql
+            - scrum_mysql_data
+            - scrum_redis
+            - scrum_rabbitmq
+        links:
+            - scrum_mysql:mysql
+            - scrum_redis:redis
+            - scrum_rabbitmq:rabbitmq
+        volumes:
+            - ./source:/usr/src/app
+        env_file: .env
+        command: ./run_celery_beat.sh

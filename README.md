@@ -216,6 +216,9 @@ Celerry tasks is created following the instruction from [this link](https://real
 
 Docker configuration for celery and django is introduced in [this post](https://www.syncano.io/blog/configuring-running-django-celery-docker-containers-pt-1/)
 
+After a lot of research and deadends, it looks like supervisor, which is a process manager, does not have a support for python 3 as of this writting. 
+The alternative is circus. Use of celery with circus is explained in [this post](http://aameer.github.io/circus-as-an-alternative-to-supervisor/)
+
 
 
 
