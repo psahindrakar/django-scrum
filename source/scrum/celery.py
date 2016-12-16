@@ -1,4 +1,4 @@
-from datetime import timedelta
+from celery.schedules import crontab
 import os
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "scrum.settings")
 
@@ -14,6 +14,6 @@ app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 app.conf.beat_schedule = {
     'add-every-30-seconds': {
         'task': 'scrum.tasks.say_hi',
-        'schedule': 2.0
+        'schedule': crontab(minute='*')
     },
 }

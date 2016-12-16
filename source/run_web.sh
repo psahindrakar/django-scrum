@@ -1,7 +1,7 @@
 #!/bin/sh
 
-# wait for PSQL server to start
-sleep 10
+# Wait for mysql service to start
+while ! nc -w 1 -z mysql 3306; do sleep 1; done
 
 # prepare init migration
 python manage.py makemigrations  

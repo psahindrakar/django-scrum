@@ -8,8 +8,11 @@ services:
             - "9000:80"                                             # Host port 9000 is mapped on to container's port 80
         volumes:
             - ./source:/usr/src/app
+        depends_on:
+            - scrum_web
         links:
             - scrum_web:web
+        
 
 
     scrum_mysql_data:

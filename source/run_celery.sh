@@ -1,7 +1,7 @@
 #!/bin/sh
 
-# wait for RabbitMQ server to start
-sleep 10
+# Wait for mysql service to start
+while ! nc -w 1 -z rabbitmq 5672; do sleep 1; done
 
 # Run celery worker with circus project manager with configurations in an ini file. 
 circusd circus_worker.ini
