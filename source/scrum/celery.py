@@ -10,10 +10,13 @@ app = Celery('scrum', backend='amqp', broker='amqp://rabbit_admin:scrum@2016!@ra
 app.config_from_object('django.conf:settings', namespace='CELERY')
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 
-
 app.conf.beat_schedule = {
     'add-every-30-seconds': {
         'task': 'scrum.tasks.say_hi',
-        'schedule': crontab(minute='*')
+        'schedule': crontab(minute='*/5')
+    },
+    'send-welcome-email-every-5min': {
+        'task': 'scrum.tasks.send_welcome_email',
+        'schedule': crontab(minute='0', hour="*"),
     },
 }
