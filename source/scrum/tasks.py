@@ -19,7 +19,7 @@ def say_hi():
 def send_welcome_email():
     # After trying whole lot of things to get the Sendgrid API from setting or from and env file, it could not be done. So until there is way to 
     # get it here from outside, keeping it hardcoded. No choice. 
-    SENDGRID_KEY = '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'
+    SENDGRID_KEY = 'Sendgrid api key should be added here'
     sg = sendgrid.SendGridAPIClient(apikey=SENDGRID_KEY)
     from_email = Email("no-reply@selenite.co")
     subject = "Welcome to Selenite"
