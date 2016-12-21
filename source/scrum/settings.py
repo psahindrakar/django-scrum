@@ -10,7 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
-import os
+import os, datetime
 from kombu import Exchange, Queue
 
 
@@ -29,26 +29,73 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'twydj8^_vdjw$ww7@^6e542v_rzab+qy*57qwjbf63
 DEBUG = True if os.getenv('DEBUG') == 'true' else False
 ALLOWED_HOSTS = ['*']
 
+# Django Rest Auth Configuration --------------------------------
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+    ),
+}
+
+REST_SESSION_LOGIN = False
+REST_USE_JWT = True
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+ACCOUNT_EMAIL_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = 'username'
+ACCOUNT_EMAIL_VERIFICATION = 'optional'
+
+JWT_AUTH = {
+    'JWT_ENCODE_HANDLER': 'rest_framework_jwt.utils.jwt_encode_handler',
+    'JWT_DECODE_HANDLER': 'rest_framework_jwt.utils.jwt_decode_handler',
+    'JWT_PAYLOAD_HANDLER': 'rest_framework_jwt.utils.jwt_payload_handler',
+    'JWT_PAYLOAD_GET_USER_ID_HANDLER' : 'rest_framework_jwt.utils.jwt_get_user_id_from_payload_handler',
+    'JWT_RESPONSE_PAYLOAD_HANDLER' : 'rest_framework_jwt.utils.jwt_response_payload_handler',
+    'JWT_SECRET_KEY': SECRET_KEY,
+    'JWT_ALGORITHM': 'HS256',
+    'JWT_VERIFY': True,
+    'JWT_VERIFY_EXPIRATION': True,
+    'JWT_LEEWAY': 0,
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=300),
+    'JWT_AUDIENCE': None,
+    'JWT_ISSUER': None,
+    'JWT_ALLOW_REFRESH': False,
+    'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
+    'JWT_AUTH_HEADER_PREFIX': 'Bearer',
+}
 
 # Application definition
 
 INSTALLED_APPS = [
     'django.contrib.auth', 
     'django.contrib.contenttypes', 
+    'django.contrib.sessions',    
     'django.contrib.staticfiles',
 
     # Third party apps  
     'rest_framework', 
     'rest_framework.authtoken',
+    'rest_auth',
 
-    # Internal apps  
-    'board', 
+    # Internal apps    
+    'board',
 ]
 
+SITE_ID = 1
+
 MIDDLEWARE = [
-    'django.middleware.common.CommonMiddleware', 
-    'django.middleware.csrf.CsrfViewMiddleware', 
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',    
 ]
 
 ROOT_URLCONF = 'scrum.urls'
@@ -95,18 +142,10 @@ DATABASES = {
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    { 'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator', },
+    { 'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', },
+    { 'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator', },
+    { 'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator', },
 ]
 
 
@@ -125,13 +164,13 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 
-# Redis
+# Redis Configuration -------------------------------------------
 REDIS_PORT = 6379  
 REDIS_DB = 0  
 REDIS_HOST = os.getenv('REDIS_PORT_6379_TCP_ADDR', 'redis')
 
 
-# RabbitMQ
+# RabbitMQ Message broker configuration --------------------------
 RABBIT_HOSTNAME = os.getenv('RABBIT_PORT_5672_TCP', 'rabbit')
 
 if RABBIT_HOSTNAME.startswith('tcp://'):  
@@ -145,8 +184,6 @@ if not BROKER_URL:
         hostname=RABBIT_HOSTNAME,
         vhost=os.getenv('RABBIT_ENV_VHOST', ''))
 
-
-print('Broker URL : ' + BROKER_URL)
 BROKER_TRANSPORT_OPTIONS = {'fanout_prefix': True, 'fanout_patterns': True, 'visibility_timeout': 480}
 
 
@@ -155,13 +192,11 @@ BROKER_HEARTBEAT = '?heartbeat=30'
 if not BROKER_URL.endswith(BROKER_HEARTBEAT):  
     BROKER_URL += BROKER_HEARTBEAT
 
-print('Broker heartbeat URL : ' + BROKER_URL)
-
 BROKER_POOL_LIMIT = 1  
 BROKER_CONNECTION_TIMEOUT = 10
 
 
-# Celery configuration
+# Celery configuration -----------------------------------
 
 # configure queues, currently we have only one
 CELERY_TIMEZONE = 'UTC'

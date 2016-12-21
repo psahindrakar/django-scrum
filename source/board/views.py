@@ -3,6 +3,9 @@ from django.contrib.auth import get_user_model
 
 from rest_framework import viewsets
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny, IsAuthenticated
+
+from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 
 from .models import Sprint, Task
 from .serializers import SprintSerializer, TaskSerializer, UserSerializer
@@ -27,6 +30,8 @@ class SprintViewSet(DefaultsMixin, viewsets.ModelViewSet):
     serializer_class = SprintSerializer
     search_fields = ('name',)
     ordering_fields = ('end', 'name',)
+    permission_classes = (IsAuthenticated, )
+    authentication_classes = (JSONWebTokenAuthentication,)
 
 
 class TaskViewSet(DefaultsMixin, viewsets.ModelViewSet):
@@ -37,6 +42,8 @@ class TaskViewSet(DefaultsMixin, viewsets.ModelViewSet):
     filter_fields = ('order', 'sprint',)
     # filter_class = TaskFilter
     ordering = ('name',)
+    permission_classes = (IsAuthenticated, )
+    authentication_classes = (JSONWebTokenAuthentication,)
 
 
 class UserViewSet(DefaultsMixin, viewsets.ReadOnlyModelViewSet):
@@ -46,4 +53,6 @@ class UserViewSet(DefaultsMixin, viewsets.ReadOnlyModelViewSet):
     lookup_field = User.USERNAME_FIELD
     lookup_url_kwarg = User.USERNAME_FIELD
 
-    search_fields = (User.USERNAME_FIELD,)    
+    search_fields = (User.USERNAME_FIELD,)  
+    permission_classes = (IsAuthenticated, )  
+    authentication_classes = (JSONWebTokenAuthentication,)

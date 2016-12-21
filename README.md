@@ -217,7 +217,34 @@ Celerry tasks is created following the instruction from [this link](https://real
 Docker configuration for celery and django is introduced in [this post](https://www.syncano.io/blog/configuring-running-django-celery-docker-containers-pt-1/)
 
 After a lot of research and deadends, it looks like supervisor, which is a process manager, does not have a support for python 3 as of this writting. 
-The alternative is circus. Use of celery with circus is explained in [this post](http://aameer.github.io/circus-as-an-alternative-to-supervisor/)
+The alternative is circus. Use of celery with circus is explained in [this post](http://aameer.github.io/circus-as-an-alternative-to-supervisor/). 
+
+
+# Authentication module
+It is required to have JWT based authentication module which can provide signup, login, logout, change password, reset password, get user profile and update 
+user profile stories. The (django-rest-auth)[https://github.com/Tivix/django-rest-auth] release 0.8.2 is used in the project for the functionalty mentioned. 
+The code is copied and maintained here separately for the sole purpose to be able to override the authentication urls, as the project, though provides various
+configuration options, does not allow to override the urls. It should be manually maintained in sync with the django-rest-auth project in case their are
+newer release with more options and bug fixes. 
+
+Thought the procedure was followed as per the documentation of django-rest-auth to djangorestframework-JWT, 
+the JWT token was not accepted by list-tasks api for long time. It was found that after adding 
+`authentication_classes = (JSONWebTokenAuthentication,)` explicity on ModelViewset, the token was accepted. 
+This is strange because, following setting for REST_FRAMEWORK is already provided in setting.py
+```
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+    ),
+}
+```
+So, it should have taken the default authentication_class from there and it should not have been required to provide the same
+explicitly on the ModelViewset. 
 
 
 

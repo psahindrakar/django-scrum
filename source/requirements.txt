@@ -11,6 +11,12 @@ redis==2.10.5
 circus==0.14.0                      # Required to keep worker and beat process live
 requests==2.12.4                    # For calling third party apis from app
 sendgrid==3.6.3                     # Sendgrid is a email service. This library helps integrate it with the project
+django-allauth==0.29.0              # For registration and social login
+djangorestframework-jwt==1.9.0      # JWT support for rest framework to be used with django-rest-auth
+six==1.10.0                         # Django rest auth dependency
+responses==0.5.1                    # Django rest auth dependency
 
 # Server
 gunicorn==19.6.0                    # Python production ready server
+
+
